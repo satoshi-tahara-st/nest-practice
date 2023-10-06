@@ -17,6 +17,9 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/entities/user.entitiy';
 import { GetUser } from 'src/auth/decorator/get-user.decorator';
+import { UserStatus } from 'src/auth/user-status.enum';
+import { Role } from 'src/auth/decorator/role.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('items')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -34,7 +37,8 @@ export class ItemsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @Role(UserStatus.PREMIUM)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async create(
     @Body() createItemDto: CreateItemDto,
     @GetUser() user: User,
@@ -57,6 +61,6 @@ export class ItemsController {
     @Param('id', ParseUUIDPipe) id: string,
     @GetUser() user: User,
   ): Promise<void> {
-    return await this.itemsService.delete(id);
+    return await this.itemsService.delete(id, user);
   }
 }
